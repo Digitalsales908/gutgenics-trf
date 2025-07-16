@@ -17,6 +17,10 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader, simpleSplit
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, TableStyle, Image
+from flask import Flask, request, jsonify, send_file
+import pandas as pd
+import io
+import uuid  # 
 
 # Optional PDF styling/HTML rendering library
 
@@ -41,9 +45,15 @@ s3_client = boto3.client(
     aws_secret_access_key=AWS_SECRET_KEY
 )
 
+submitted_forms = []  # Global list to hold all form submissions
+
+
+
 def extract_form_data(req):
     """Extracts and returns full form data including checkboxes and radios."""
     return {
+        "id": str(uuid.uuid4()),  # Generate a unique UUID4
+
         # Basic Details
         "full_name": req.form.get("full_name"),
         "email": req.form.get("email"),
@@ -82,10 +92,9 @@ def extract_form_data(req):
         "alcohol": req.form.get("alcohol"),
         "alcohol_days_per_week": req.form.get("alcohol_days_per_week"),
         "alcohol_quantity": req.form.get("alcohol_quantity"),
-        "native_place": req.form.get("native_place"),
         "ethnicity_other": req.form.get("ethnicity_other"),
         "consent_given": req.form.get("consent_given") == "true",
-    }
+}
 
 def decode_signature(signature_data):
     """Decodes base64 image data to ImageReader object."""
@@ -342,7 +351,6 @@ def send_email_via_power_automate(email, full_name, pdf_buffer):
 def index():
     return render_template('form.html')
 
-
 @app.route("/submit", methods=["POST"])
 def submit():
     try:
@@ -359,7 +367,8 @@ def submit():
         pdf_buffer = generate_pdf(form_data, signature_image)
         print("✔️ PDF Generated.")
 
-        # Removed: upload_pdf_to_s3(pdf_buffer, form_data["full_name"])
+        # Store the form data (excluding signature image for privacy)
+        submitted_forms.append({k: v for k, v in form_data.items() if k != "signature_data"})
 
         status_code, response_text = send_email_via_power_automate(
             form_data["email"], form_data["full_name"], pdf_buffer
@@ -369,12 +378,40 @@ def submit():
         return jsonify({
             "message": "Form submitted and email sent.",
             "email_status": status_code,
-            "email_response": response_text
+            "email_response": response_text,
+            "form_id": form_data["id"]  # Optionally return the form ID
         })
 
     except Exception as e:
         print("❌ Internal Server Error:", str(e))
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/download_excel", methods=["GET"])
+def download_excel():
+    if not submitted_forms:
+        return jsonify({"message": "No form submissions yet."}), 400
+
+    # Convert list of dictionaries to DataFrame
+    df = pd.DataFrame(submitted_forms)
+
+    # Convert list values to comma-separated strings
+    for col in df.columns:
+        if df[col].apply(lambda x: isinstance(x, list)).any():
+            df[col] = df[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name="Form Submissions")
+    output.seek(0)
+
+    return send_file(
+        output,
+        download_name="form_submissions.xlsx",
+        as_attachment=True,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 
 if __name__ == "__main__":
