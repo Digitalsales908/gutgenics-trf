@@ -23,6 +23,9 @@ from reportlab.platypus import Table, TableStyle, Image
 app = Flask(__name__)
 CORS(app)
 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Read from environment variables
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
@@ -105,9 +108,13 @@ def generate_pdf(data, signature_image):
     checkbox_size = 4 * mm
     section_gap = 10 * mm
 
-    LEFT_LOGO_PATH = "F:/progenics_code_automation/TRF_Consent_Form/static/Images/gutgenics_logo.png"
-    RIGHT_LOGO_PATH = "F:/progenics_code_automation/TRF_Consent_Form/static/Images/progenics_logo.jpg"
-    BACKGROUND_IMAGE_PATH = "F:/progenics_code_automation/TRF_Consent_Form/static/Images/progenics_logo.jpg"
+    # LEFT_LOGO_PATH = "F:/progenics_code_automation/TRF_Consent_Form/static/Images/gutgenics_logo.png"
+    # RIGHT_LOGO_PATH = "F:/progenics_code_automation/TRF_Consent_Form/static/Images/progenics_logo.jpg"
+    # BACKGROUND_IMAGE_PATH = "F:/progenics_code_automation/TRF_Consent_Form/static/Images/progenics_logo.jpg"
+    
+    LEFT_LOGO_PATH = os.path.join(BASE_DIR, "static", "Images", "gutgenics_logo.png")
+    RIGHT_LOGO_PATH = os.path.join(BASE_DIR, "static", "Images", "progenics_logo.jpg")
+    BACKGROUND_IMAGE_PATH = os.path.join(BASE_DIR, "static", "Images", "progenics_logo.jpg")
 
     LOGO_WIDTH = 50 * mm
     LOGO_HEIGHT = 20 * mm
