@@ -1,0 +1,197 @@
+ 
+/* body { background-color: #f8f9fa; }
+.container {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+h2, h3 { text-align: center; color: #4CAF50; }
+.form-group { margin-bottom: 15px; }
+.form-check-label { margin-left: 5px; }
+.btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+.btn:hover { background-color: #45a049; }
+h2, h3 { text-align: center; color: #4CAF50; }
+.form-group { margin-bottom: 15px; }
+.btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+.btn:hover { background-color: #45a049; }
+.signature-pad-container {
+    border: 2px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    background: white;
+    text-align: center;
+}
+canvas {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 150px;
+    background-color: #fff;
+} */
+/* .clear-btn {
+    margin-top: 5px;
+    background-color: red;
+}
+  */
+/* input:required:invalid,
+textarea:required:invalid {
+  border-color: red;
+} */
+
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #a2ebf5;
+    color: #333;
+}
+
+.container {
+    background-color: #ffffff;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+h2, h3 {
+    color: #1576aa;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+textarea:focus {
+    border-color: #30c6e5;
+    outline: none;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    margin-right: 8px;
+    margin-left: 4px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.btn {
+    background-color: #30c6e5;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background-color: #23b0cc;
+}
+
+.clear-btn {
+    background-color: #ff6f61;
+    margin-left: 10px;
+}
+
+.clear-btn:hover {
+    background-color: #e65a50;
+}
+
+#signature-pad {
+    margin-top: 10px;
+    background: #f4f4f4;
+    border-radius: 8px;
+}
+
+#signatureSection {
+    margin-top: 30px;
+}
+
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.logo-img {
+    max-height: 60px;
+    width: auto;
+}
+
+.form-header h2 {
+    margin: 0 auto;
+    font-size: 24px;
+    color: #1576aa;
+    font-weight: bold;
+    text-align: center;
+}
+
+
+.section-heading {
+    /* background-color:  #1576aa; Light olive green */
+    color: #1576aa;;
+    font-weight: bold;
+    padding: 10px 15px;
+    margin: 30px 0 15px 0;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    text-align: center;
+}
+
