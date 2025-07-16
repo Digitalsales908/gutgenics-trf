@@ -19,8 +19,6 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, TableStyle, Image
 
 # Optional PDF styling/HTML rendering library
-import weasyprint
-
 
 app = Flask(__name__)
 CORS(app)
