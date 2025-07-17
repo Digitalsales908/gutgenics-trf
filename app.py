@@ -36,7 +36,7 @@ AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 # Power Automate Endpoint
-POWER_AUTOMATE_URL = "https://prod-12.centralindia.logic.azure.com:443/workflows/ac28644f7aa245a89444b061fe6f0354/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=8OyznAHYBFjL3Lchpg1_b28r9qpPeXRQA65qd5yddds"  # Replace with your actual flow URL
+POWER_AUTOMATE_URL = "https://prod-17.centralindia.logic.azure.com:443/workflows/67e56ac6dcfe471cb9b0f6cba927b564/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=W0j-bfkxxRGuWY1HxMCvlv1zenty1Z98Pahjjjehprs"  # Replace with your actual flow URL
 
 # # Initialize S3 client
 s3_client = boto3.client(
@@ -411,8 +411,6 @@ def download_excel():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
