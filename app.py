@@ -22,6 +22,9 @@ import pandas as pd
 import io
 import uuid  # 
 
+from reportlab.lib.utils import ImageReader
+
+
 # Optional PDF styling/HTML rendering library
 
 app = Flask(__name__)
@@ -48,7 +51,8 @@ s3_client = boto3.client(
 submitted_forms = []  # Global list to hold all form submissions
 
 
-
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import datetime
 
 def extract_form_data(req):
@@ -320,7 +324,8 @@ def generate_pdf(data, signature_image):
                         ["No"] if data.get("consent_given") else ["Yes"])
     if signature_image:
         draw_field("Signature:", underline=True)
-        c.drawImage(signature_image, box_margin + 60, y + 10, width=200, height=30, mask="auto")
+        image_reader = ImageReader(signature_image)
+        c.drawImage(image_reader, box_margin + 60, y + 10, width=200, height=30, mask="auto")
     else:
         draw_field("Signature:", data.get("signature", ""))
     draw_field("Place:", data.get("native_place", ""))
@@ -341,9 +346,9 @@ def upload_pdf_to_s3(pdf_buffer, full_name):
     )
     return key
 
-def send_email_via_power_automate(email, full_name, pdf_buffer):
+def send_email_via_power_automate(email, full_name, pdf_bytes):
     """Base64 encodes PDF and sends it to Power Automate flow."""
-    encoded_pdf = base64.b64encode(pdf_buffer.getvalue()).decode('utf-8')
+    encoded_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
     payload = {
         "email": email,
         "subject": "Your TRF Consent Form",
@@ -396,38 +401,122 @@ def index():
 #         return jsonify({"error": str(e)}), 500
 
 import os
+import base64
 import pandas as pd
-from flask import request, jsonify
+from PIL import Image
+from io import BytesIO
+from flask import request, jsonify, send_file
+from datetime import datetime
+
+SIGNATURES_DIR = "signatures"
+os.makedirs(SIGNATURES_DIR, exist_ok=True)
+
+import boto3
+import uuid
+
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+BUCKET_NAME = os.environ.get("BUCKET_NAME", "trf-consent-form-data")
+FOLDER = "signatures"  # Optional S3 subfolder
+
+s3 = boto3.client(
+    "s3",
+    region_name=AWS_REGION,
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY")
+)
+
+def upload_to_s3(local_path, filename):
+    s3_key = f"{FOLDER}/{filename}"
+
+    s3.upload_file(
+        Filename=local_path,
+        Bucket=BUCKET_NAME,
+        Key=s3_key,
+        ExtraArgs={"ContentType": "image/png"}  # Removed ACL
+    )
+
+    return f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+
+
+
+
+def decode_signature(data_url):
+    header, encoded = data_url.split(",", 1)
+    data = base64.b64decode(encoded)
+    return Image.open(BytesIO(data))
+
 
 @app.route("/submit", methods=["POST"])
 def submit_form():
-    form_data = extract_form_data(request)  # your form data function
+    form_data = extract_form_data(request)
 
-    # Convert to DataFrame
+    # Decode and save signature
+    signature_data = form_data.get("signature_data")
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+    if signature_data:
+        try:
+            signature_image = decode_signature(signature_data)
+            form_data["signature_path"] = f"signature_{form_data['id']}_{timestamp}.png"
+            print("✔️ Signature Decoded.")
+        except Exception as e:
+            return jsonify({"error": f"Signature decoding failed: {str(e)}"}), 400
+    else:
+        signature_image = None
+        form_data["signature_path"] = None
+
+    # Remove raw base64 before saving form
+    form_data.pop("signature_data", None)
+
+    # ✅ Generate the PDF
+    pdf_buffer = generate_pdf(form_data, signature_image)
+    pdf_bytes = pdf_buffer.getvalue()  # 🔁 Read it once and reuse as bytes
+    pdf_filename = f"TRF_{form_data['id']}_{timestamp}.pdf"
+    print("✔️ PDF Generated.")
+
+    # ✅ Upload to S3
+    try:
+        s3.upload_fileobj(
+            io.BytesIO(pdf_bytes),  # Re-wrap in BytesIO
+            BUCKET_NAME,
+            f"pdfs/{pdf_filename}",
+            ExtraArgs={"ContentType": "application/pdf"}
+        )
+        print(f"✔️ Uploaded PDF to S3 as pdfs/{pdf_filename}")
+    except Exception as e:
+        print(f"❌ Failed to upload PDF to S3: {e}")
+        return jsonify({"error": "PDF upload failed"}), 500
+
+    # ✅ Send Email via Power Automate
+    # email = form_data.get("email")
+    # full_name = form_data.get("full_name") or f"{form_data.get('first_name', '')} {form_data.get('last_name', '')}"
+    # try:
+    #     status_code, response_text = send_email_via_power_automate(email, full_name, pdf_bytes)
+    #     if status_code in [200, 202]:
+    #         print("📧 Email accepted for processing.")
+    #     else:
+    #         print(f"❌ Email sending failed with status {status_code}: {response_text}")
+    # except Exception as e:
+    #     print(f"❌ Email sending exception: {e}")
+    # ✅ Save data to Excel
+
     new_df = pd.DataFrame([form_data])
-
-    # Convert any list-type values into strings
     for col in new_df.columns:
         new_df[col] = new_df[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
 
     file_path = "form_data.xlsx"
-
     if os.path.exists(file_path):
-        # Load existing data
         existing_df = pd.read_excel(file_path)
-
-        # Concatenate new data
         updated_df = pd.concat([existing_df, new_df], ignore_index=True)
     else:
-        updated_df = new_df  # First entry
+        updated_df = new_df
 
-    # Save back to the same file (overwrite with appended content)
     updated_df.to_excel(file_path, index=False)
 
-    return jsonify({"message": "Form submitted and saved."})
-
-
-
+    return jsonify({
+        "message": "Form submitted, PDF uploaded, and email sent.",
+        "pdf_url": f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/pdfs/{pdf_filename}"
+    })
 
 @app.route("/download_excel", methods=["GET"])
 def download_excel():
@@ -442,7 +531,6 @@ def download_excel():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -6,3 +6,5 @@ reportlab
 gunicorn
 pandas
 xlsxwriter
+python-dotenv
+openpyxl
