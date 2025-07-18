@@ -425,6 +425,15 @@ s3 = boto3.client(
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY")
 )
 
+EXCEL_S3_KEY = "excel/form_data.xlsx"
+LOCAL_EXCEL_PATH = "form_data.xlsx"
+
+# try:
+#     s3.download_file(BUCKET_NAME, EXCEL_S3_KEY, LOCAL_EXCEL_PATH)
+#     print("✔️ Restored Excel file from S3.")
+# except Exception as e:
+#     print(f"ℹ️ No Excel backup found in S3: {e}")
+
 def upload_to_s3(local_path, filename):
     s3_key = f"{FOLDER}/{filename}"
 
@@ -512,6 +521,16 @@ def submit_form():
         updated_df = new_df
 
     updated_df.to_excel(file_path, index=False)
+    try:
+        s3.upload_file(
+            Filename=file_path,
+            Bucket=BUCKET_NAME,
+            Key="excel/form_data.xlsx",
+            ExtraArgs={"ContentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+        )
+        print("✔️ Uploaded Excel to S3.")
+    except Exception as e:
+        print(f"❌ Failed to upload Excel to S3: {e}")
 
     return jsonify({
         "message": "Form submitted, PDF uploaded, and email sent.",
