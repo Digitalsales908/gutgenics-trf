@@ -428,11 +428,11 @@ s3 = boto3.client(
 EXCEL_S3_KEY = "excel/form_data.xlsx"
 LOCAL_EXCEL_PATH = "form_data.xlsx"
 
-# try:
-#     s3.download_file(BUCKET_NAME, EXCEL_S3_KEY, LOCAL_EXCEL_PATH)
-#     print("✔️ Restored Excel file from S3.")
-# except Exception as e:
-#     print(f"ℹ️ No Excel backup found in S3: {e}")
+try:
+    s3.download_file(BUCKET_NAME, EXCEL_S3_KEY, LOCAL_EXCEL_PATH)
+    print("✔️ Restored Excel file from S3.")
+except Exception as e:
+    print(f"ℹ️ No Excel backup found in S3: {e}")
 
 def upload_to_s3(local_path, filename):
     s3_key = f"{FOLDER}/{filename}"
