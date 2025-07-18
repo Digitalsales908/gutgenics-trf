@@ -395,31 +395,36 @@ def index():
 #         print("❌ Internal Server Error:", str(e))
 #         return jsonify({"error": str(e)}), 500
 
+import os
+import pandas as pd
+from flask import request, jsonify
+
 @app.route("/submit", methods=["POST"])
 def submit_form():
-    form_data = extract_form_data(request)  # Your existing function
+    form_data = extract_form_data(request)  # your form data function
 
     # Convert to DataFrame
     new_df = pd.DataFrame([form_data])
 
-    # Convert list values to comma-separated strings
+    # Convert any list-type values into strings
     for col in new_df.columns:
-        if new_df[col].apply(lambda x: isinstance(x, list)).any():
-            new_df[col] = new_df[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+        new_df[col] = new_df[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
 
     file_path = "form_data.xlsx"
 
-    # Append to file
     if os.path.exists(file_path):
+        # Load existing data
         existing_df = pd.read_excel(file_path)
-        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+
+        # Concatenate new data
+        updated_df = pd.concat([existing_df, new_df], ignore_index=True)
     else:
-        combined_df = new_df
+        updated_df = new_df  # First entry
 
-    # Save permanently
-    combined_df.to_excel(file_path, index=False)
+    # Save back to the same file (overwrite with appended content)
+    updated_df.to_excel(file_path, index=False)
 
-    return jsonify({"message": "Form submitted successfully."})
+    return jsonify({"message": "Form submitted and saved."})
 
 
 
@@ -429,7 +434,7 @@ def download_excel():
     file_path = "form_data.xlsx"
 
     if not os.path.exists(file_path):
-        return jsonify({"message": "No form submissions yet."}), 400
+        return jsonify({"message": "No submissions yet."}), 400
 
     return send_file(
         file_path,
@@ -437,6 +442,7 @@ def download_excel():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
