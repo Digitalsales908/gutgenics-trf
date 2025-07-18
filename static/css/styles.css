@@ -194,4 +194,54 @@ textarea {
     text-transform: uppercase;
     text-align: center;
 }
+/* Responsive Logo */
+.logo-img {
+  max-width: 100px;
+  height: auto;
+}
+
+/* Mobile-Friendly Styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+    margin: 20px auto;
+  }
+
+  .form-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .form-header .logo-img {
+    width: 100px;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 1rem;
+  }
+
+  button,
+  .btn {
+    font-size: 1.1rem;
+  }
+}
+.error {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+.error-input {
+  border: 1px solid red;
+}
+
+
 

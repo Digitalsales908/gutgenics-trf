@@ -49,10 +49,17 @@ submitted_forms = []  # Global list to hold all form submissions
 
 
 
+from datetime import datetime
+
 def extract_form_data(req):
     """Extracts and returns full form data including checkboxes and radios."""
+
+    # Generate ID like: DG20250718143030
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    unique_id = f"DG{timestamp}"
+
     return {
-        "id": str(uuid.uuid4()),  # Generate a unique UUID4
+        "id": unique_id,
 
         # Basic Details
         "full_name": req.form.get("full_name"),
@@ -63,12 +70,12 @@ def extract_form_data(req):
         "address": req.form.get("address"),
         "native_place": req.form.get("native_place"),
         "mother_tongue": req.form.get("mother_tongue"),
-        "height": request.form.get("height"),
-        "weight": request.form.get("weight"),
-        "sampling_date": request.form.get("sampling_date"),
-        "sampling_time": request.form.get("sampling_time"),
-        "reason": request.form.getlist("reason"),
-        "reason_other": request.form.get("reason_other"),
+        "height": req.form.get("height"),
+        "weight": req.form.get("weight"),
+        "sampling_date": req.form.get("sampling_date"),
+        "sampling_time": req.form.get("sampling_time"),
+        "reason": req.form.getlist("reason"),
+        "reason_other": req.form.get("reason_other"),
 
         # Signature
         "signature_data": req.form.get("signature_data"),
@@ -94,7 +101,8 @@ def extract_form_data(req):
         "alcohol_quantity": req.form.get("alcohol_quantity"),
         "ethnicity_other": req.form.get("ethnicity_other"),
         "consent_given": req.form.get("consent_given") == "true",
-}
+    }
+
 
 def decode_signature(signature_data):
     """Decodes base64 image data to ImageReader object."""
@@ -370,16 +378,17 @@ def submit():
         # Store the form data (excluding signature image for privacy)
         submitted_forms.append({k: v for k, v in form_data.items() if k != "signature_data"})
 
-        status_code, response_text = send_email_via_power_automate(
-            form_data["email"], form_data["full_name"], pdf_buffer
-        )
-        print(f"✔️ Email sent | Status: {status_code} | Response: {response_text}")
+        # Email sending disabled
+        # status_code, response_text = send_email_via_power_automate(
+        #     form_data["email"], form_data["full_name"], pdf_buffer
+        # )
+        # print(f"✔️ Email sent | Status: {status_code} | Response: {response_text}")
 
         return jsonify({
-            "message": "Form submitted and email sent.",
-            "email_status": status_code,
-            "email_response": response_text,
-            "form_id": form_data["id"]  # Optionally return the form ID
+            "message": "Form submitted successfully. (Email sending disabled)",
+            # "email_status": status_code,
+            # "email_response": response_text,
+            "form_id": form_data["id"]
         })
 
     except Exception as e:
@@ -387,22 +396,37 @@ def submit():
         return jsonify({"error": str(e)}), 500
 
 
+import os
+
 @app.route("/download_excel", methods=["GET"])
 def download_excel():
     if not submitted_forms:
         return jsonify({"message": "No form submissions yet."}), 400
 
     # Convert list of dictionaries to DataFrame
-    df = pd.DataFrame(submitted_forms)
+    new_df = pd.DataFrame(submitted_forms)
 
     # Convert list values to comma-separated strings
-    for col in df.columns:
-        if df[col].apply(lambda x: isinstance(x, list)).any():
-            df[col] = df[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+    for col in new_df.columns:
+        if new_df[col].apply(lambda x: isinstance(x, list)).any():
+            new_df[col] = new_df[col].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
 
+    permanent_file_path = "form_data.xlsx"
+
+    # If file exists, append to it; else create new
+    if os.path.exists(permanent_file_path):
+        existing_df = pd.read_excel(permanent_file_path)
+        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+    else:
+        combined_df = new_df
+
+    # Save combined data back to Excel permanently
+    combined_df.to_excel(permanent_file_path, index=False)
+
+    # Also serve the combined file for download
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name="Form Submissions")
+        combined_df.to_excel(writer, index=False, sheet_name="Form Submissions")
     output.seek(0)
 
     return send_file(
@@ -414,7 +438,6 @@ def download_excel():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
 
 
 
