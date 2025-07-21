@@ -59,9 +59,8 @@ def extract_form_data(req):
     """Extracts and returns full form data including checkboxes and radios."""
 
     # Generate ID like: DG20250718143030
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.now().strftime("%y%m%d%H%M%S")  # Note the lowercase 'y' for 2-digit year
     unique_id = f"DG{timestamp}"
-
     return {
         "id": unique_id,
 
@@ -267,7 +266,7 @@ def generate_pdf(data, signature_image):
         draw_field("If yes, specify:", data.get("medication_details", ""))
 
     draw_checkbox_group("Have you been diagnosed with any disease so far?", ["Yes", "No"],
-                        ["Yes"] if data.get("disease", "").lower() == "yes" else ["No"])
+                        ["Yes"] if str(data.get("disease", "")).lower() == "yes" else ["No"])
     if data.get("disease", "").lower() == "yes":
         draw_field("If yes, specify:", data.get("disease_details", ""))
 
