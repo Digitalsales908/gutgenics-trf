@@ -1,142 +1,123 @@
- 
-/* body { background-color: #f8f9fa; }
-.container {
-    max-width: 700px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-h2, h3 { text-align: center; color: #4CAF50; }
-.form-group { margin-bottom: 15px; }
-.form-check-label { margin-left: 5px; }
-.btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    border: none;
-    width: 100%;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-}
-.btn:hover { background-color: #45a049; }
-h2, h3 { text-align: center; color: #4CAF50; }
-.form-group { margin-bottom: 15px; }
-.btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    border: none;
-    width: 100%;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-}
-.btn:hover { background-color: #45a049; }
-.signature-pad-container {
-    border: 2px solid #ddd;
-    padding: 10px;
-    border-radius: 5px;
-    background: white;
-    text-align: center;
-}
-canvas {
-    border: 1px solid #ccc;
-    width: 100%;
-    height: 150px;
-    background-color: #fff;
-} */
-/* .clear-btn {
-    margin-top: 5px;
-    background-color: red;
-}
-  */
-/* input:required:invalid,
-textarea:required:invalid {
-  border-color: red;
-} */
-
-
+/* Mobile-First CSS with Fixed Responsiveness */
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background-color: #a2ebf5;
     color: #333;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
 }
 
 .container {
     background-color: #ffffff;
     max-width: 900px;
-    margin: 40px auto;
-    padding: 30px 40px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    margin: 10px auto;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: calc(100% - 20px);
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
+/* Typography */
 h2, h3 {
     color: #1576aa;
-    margin-bottom: 20px;
-    font-weight: bold;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    word-break: break-word;
+    line-height: 1.2;
 }
 
+h2 {
+    font-size: 1.4rem; /* Slightly larger for mobile */
+}
+
+h3 {
+    font-size: 1.2rem;
+}
+
+/* Form Elements */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 1rem;
 }
 
 label {
     display: block;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
 }
 
+/* Input Fields */
 input[type="text"],
 input[type="email"],
 input[type="number"],
 input[type="date"],
 input[type="time"],
-textarea {
+input[type="tel"],
+textarea,
+select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 44px;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="number"]:focus,
-input[type="date"]:focus,
-input[type="time"]:focus,
-textarea:focus {
+/* Focus States */
+input:focus,
+textarea:focus,
+select:focus {
     border-color: #30c6e5;
     outline: none;
+    box-shadow: 0 0 0 2px rgba(48, 198, 229, 0.2);
 }
 
-input[type="checkbox"],
-input[type="radio"] {
-    margin-right: 8px;
-    margin-left: 4px;
+/* Checkboxes and Radio Buttons */
+.form-group > input[type="checkbox"],
+.form-group > input[type="radio"] {
+    width: auto;
+    height: auto;
+    margin-right: 0.5rem;
+    margin-left: 0;
+    display: inline-block;
 }
 
-textarea {
-    resize: vertical;
+/* Labels for checkboxes/radios */
+.form-group > label:not([for]) {
+    display: inline-block;
+    margin-right: 1rem;
+    font-weight: normal;
+    vertical-align: middle;
+}
+
+/* Buttons */
+.btn-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 1.5rem;
 }
 
 .btn {
     background-color: #30c6e5;
     color: white;
-    padding: 10px 20px;
+    padding: 0.9rem;
     border: none;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 1rem;
     font-weight: 600;
-    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 10px;
+    transition: all 0.2s ease;
+    text-align: center;
+    width: 100%;
+    min-height: 44px;
 }
 
 .btn:hover {
@@ -145,103 +126,155 @@ textarea {
 
 .clear-btn {
     background-color: #ff6f61;
-    margin-left: 10px;
+    margin-top: 0.5rem;
 }
 
 .clear-btn:hover {
     background-color: #e65a50;
 }
 
+/* Signature Pad */
+.signature-pad-container {
+    margin: 1rem 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f8f9fa;
+    position: relative;
+    touch-action: none;
+    width: 100%;
+}
+
 #signature-pad {
-    margin-top: 10px;
-    background: #f4f4f4;
-    border-radius: 8px;
+    width: 100% !important;
+    height: 150px !important;
+    background: white;
+    display: block;
 }
 
-#signatureSection {
-    margin-top: 30px;
-}
-
-
+/* Form Header */
 .form-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.logo-img {
-    max-height: 60px;
-    width: auto;
-}
-
-.form-header h2 {
-    margin: 0 auto;
-    font-size: 24px;
-    color: #1576aa;
-    font-weight: bold;
-    text-align: center;
-}
-
-
-.section-heading {
-    /* background-color:  #1576aa; Light olive green */
-    color: #1576aa;;
-    font-weight: bold;
-    padding: 10px 15px;
-    margin: 30px 0 15px 0;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    text-align: center;
-}
-/* Responsive Logo */
-.logo-img {
-  max-width: 100px;
-  height: auto;
-}
-
-/* Mobile-Friendly Styles */
-@media (max-width: 768px) {
-  .container {
-    padding: 15px;
-    margin: 20px auto;
-  }
-
-  .form-header {
     flex-direction: column;
     align-items: center;
+    margin-bottom: 1.5rem;
     text-align: center;
-  }
-
-  .form-header .logo-img {
-    width: 100px;
-    margin-bottom: 10px;
-  }
-
-  h2 {
-    font-size: 1.5rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    font-size: 1rem;
-  }
-
-  button,
-  .btn {
-    font-size: 1.1rem;
-  }
+    flex-wrap: wrap;
 }
+
+.logo-img {
+    max-height: 50px;
+    width: auto;
+    margin: 0.5rem;
+}
+
+/* Sections */
+.section-heading {
+    color: #1576aa;
+    font-weight: 600;
+    padding: 0.75rem 0;
+    margin: 2rem 0 1rem 0;
+    font-size: 1.2rem;
+    text-align: center;
+    position: relative;
+}
+
+.section-heading::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: #30c6e5;
+    margin: 0.5rem auto 0;
+}
+
+/* Error Handling */
 .error {
-  color: red;
-  font-size: 0.9em;
-  margin-top: 4px;
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    display: block;
 }
 
 .error-input {
-  border: 1px solid red;
+    border-color: #dc3545 !important;
 }
 
+/* ======================
+   MEDIA QUERIES
+   ====================== */
 
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+    .container {
+        padding: 1.25rem;
+    }
+    
+    .form-header {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    
+    .logo-img {
+        max-height: 60px;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    .signature-width {
+        width: 150px;
+    }
+}
 
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+    .container {
+        padding: 1.75rem;
+        margin: 1.5rem auto;
+    }
+    
+    h2 {
+        font-size: 1.7rem;
+    }
+    
+    h3 {
+        font-size: 1.4rem;
+    }
+    
+    .btn-container {
+        flex-direction: row;
+    }
+    
+    .btn, .clear-btn {
+        width: auto;
+        flex: 1;
+    }
+    
+    .clear-btn {
+        margin-top: 0;
+        margin-left: 0.75rem;
+    }
+    
+    .signature-pad-container {
+        max-width: 500px;
+        margin: 1rem auto;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+    .container {
+        padding: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .container {
+        padding: 2.5rem;
+    }
+}
