@@ -21,6 +21,9 @@ from flask import Flask, request, jsonify, send_file
 import pandas as pd
 import io
 import uuid  # 
+from reportlab.platypus import Paragraph, Frame
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
 
 from reportlab.lib.utils import ImageReader
 
@@ -168,6 +171,23 @@ def generate_pdf(data, signature_image):
         c.setStrokeColor(colors.black)
         c.line(box_margin, y - 5, width - box_margin, y - 5)
         y -= 10 * mm  # Reduced from 25mm to 10mm
+
+    def draw_justified_paragraph(text, font_name, font_size, line_width, start_x, start_y):
+        nonlocal y
+        lines = simpleSplit(text, font_name, font_size, line_width)
+        for line in lines:
+            words = line.split()
+            if len(words) == 1 or line == lines[-1]:  # last line or single word line: left-align
+                c.drawString(start_x, y, line)
+            else:
+                total_word_width = sum(c.stringWidth(w, font_name, font_size) for w in words)
+                space_width = (line_width - total_word_width) / (len(words) - 1)
+                x = start_x
+                for word in words:
+                    c.drawString(x, y, word)
+                    x += c.stringWidth(word, font_name, font_size) + space_width
+            y -= line_height
+        y -= line_height / 2  # space between paragraphs
     
     START_Y = height - 30 * mm  # Reduced top margin
 
@@ -179,6 +199,7 @@ def generate_pdf(data, signature_image):
         add_logo(c)
         y = START_Y  # use consistent reduced top margin
 
+    
     def draw_field(label, value="", underline=True):
         nonlocal y
         if y < 50:
@@ -190,22 +211,27 @@ def generate_pdf(data, signature_image):
         # Draw label
         c.drawString(box_margin, y, label)
 
-        # Coordinates for the value and line
+        # Calculate starting point for value
         text_x = box_margin + c.stringWidth(label, "Helvetica", 10) + 10
-        value_y = y
-        line_y = y - 3  # line below the value
-        line_length = 60 * mm
+        max_width = width - text_x - box_margin
 
-        # Draw the value
-        if value:
-            c.drawString(text_x, value_y, str(value))
+        # Wrap the value text
+        wrapped_lines = simpleSplit(str(value), "Helvetica", 10, max_width)
+        line_count = len(wrapped_lines)
 
-        # Draw dashed line below the value
+        # Draw dashed line ABOVE the text (before printing value)
         if underline:
             c.setDash(2, 2)
-            c.line(text_x, line_y, text_x + line_length, line_y)
+            c.line(text_x, y-1, text_x + 60 * mm, y-1)
             c.setDash([])
 
+        # Draw each line of the value
+        for i, line in enumerate(wrapped_lines):
+            c.drawString(text_x, y, line)
+            if i < line_count - 1:
+                y -= line_height
+                if y < 50:
+                    new_page()
         y -= line_height
 
     def draw_checkbox_group(label, options, selected_values=None, columns=2):
@@ -263,12 +289,12 @@ def generate_pdf(data, signature_image):
     draw_checkbox_group("Are you using any medications?", ["Yes", "No"],
                         ["Yes"] if data.get("medications", "").lower() == "yes" else ["No"])
     if data.get("medications", "").lower() == "yes":
-        draw_field("If yes, specify:", data.get("medication_details", ""))
+        draw_field("If yes, specify:", data.get("medication_details", ""),underline=False)
 
     draw_checkbox_group("Have you been diagnosed with any disease so far?", ["Yes", "No"],
                         ["Yes"] if str(data.get("disease", "")).lower() == "yes" else ["No"])
     if data.get("disease", "").lower() == "yes":
-        draw_field("If yes, specify:", data.get("disease_details", ""))
+        draw_field("If yes, specify:", data.get("disease_details", ""), underline=False)
 
     draw_checkbox_group("Which of the following do you eat?", ["Veg", "Non-Veg"], data.get("diet", []))
     draw_checkbox_group("Exercise:", ["Sedentary", "Mild", "Vigorous"],
@@ -307,18 +333,12 @@ def generate_pdf(data, signature_image):
     max_width = width - 2 * box_margin  # available width for wrapping
 
     for text in consent_texts:
-        # Wrap text into lines that fit the page width
-        lines = simpleSplit(text, "Helvetica", 10, max_width)
-        
-        # Check space and paginate if needed
-        if y < (len(lines) + 1) * line_height:
+        needed_height = (len(simpleSplit(text, "Helvetica", 10, max_width)) + 1) * line_height
+        if y < needed_height + 20:
             new_page()
+        draw_justified_paragraph(text, "Helvetica", 10, max_width, box_margin, y)
 
-        for line in lines:
-            c.drawString(box_margin, y, line)
-            y -= line_height
 
-        y -= line_height  # Extra spacing between paragraphs
     draw_checkbox_group("Providing Consent for Gut Health Testing:", ["Yes", "No"],
                         ["No"] if data.get("consent_given") else ["Yes"])
     if signature_image:
