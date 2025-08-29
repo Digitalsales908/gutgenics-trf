@@ -310,12 +310,15 @@ def generate_pdf(data, signature_image):
     if alcohol_status in ["yes", "occasionally"]:
         draw_field("No. of days in a week:", data.get("alcohol_days_per_week", ""))
         draw_field("Quantity (ml/week):", data.get("alcohol_quantity", ""))
-    ethnicity_val = data.get("ethnicity", ["No"])
-    draw_checkbox_group("Nationality/Ethnicity:",
-                        ["Asian Indian (Indian, Pakistan, Bangladesh, Sri Lanka, Nepal)"],
-                        ["Asian Indian (Indian, Pakistan, Bangladesh, Sri Lanka, Nepal)"] if ethnicity_val[0].lower() == "yes" else [])
+    ethnicity_val = data.get("ethnicity", ["No"]) or ["No"]
+    draw_checkbox_group(
+        "Nationality/Ethnicity:",
+        ["Asian Indian (Indian, Pakistan, Bangladesh, Sri Lanka, Nepal)"],
+        ["Asian Indian (Indian, Pakistan, Bangladesh, Sri Lanka, Nepal)"] if ethnicity_val[0].lower() == "yes" else []
+    )
     if ethnicity_val[0].lower() != "yes":
         draw_field("If not Asian Indian, please specify:", data.get("ethnicity_other", ""))
+
     draw_field("Native Place:", data.get("native_place", ""))
     draw_field("Mother Tongue:", data.get("mother_tongue", ""))
     # Consent Section
@@ -464,8 +467,6 @@ def upload_to_s3(local_path, filename):
     )
 
     return f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
-
-
 
 
 def decode_signature(data_url):
